@@ -1,0 +1,24 @@
+services:
+  mysql:
+    image: docker.io/library/mysql:8.4
+    container_name: agenda-pro-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: agenda_pro
+      MYSQL_USER: agenda_pro
+      MYSQL_PASSWORD: agenda_pro
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - agenda-pro-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  agenda-pro-mysql-data:
+    name: agenda-pro-mysql-data
