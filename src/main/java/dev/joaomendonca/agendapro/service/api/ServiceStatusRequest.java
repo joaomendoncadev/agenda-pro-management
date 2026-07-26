@@ -1,0 +1,1 @@
+package dev.joaomendonca.agendapro.service.api; import dev.joaomendonca.agendapro.service.domain.ServiceStatus;import jakarta.validation.constraints.NotNull; public record ServiceStatusRequest(@NotNull ServiceStatus status){}

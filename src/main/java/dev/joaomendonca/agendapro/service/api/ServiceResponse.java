@@ -1,0 +1,3 @@
+package dev.joaomendonca.agendapro.service.api;
+import dev.joaomendonca.agendapro.service.domain.*;import java.math.BigDecimal;import java.time.Instant;import java.util.UUID;
+public record ServiceResponse(UUID id,String name,String description,Integer durationMinutes,BigDecimal price,String category,BigDecimal commissionPercentage,ServiceStatus status,Instant createdAt,Instant updatedAt){public static ServiceResponse from(ServiceOffering s){return new ServiceResponse(s.getId(),s.getName(),s.getDescription(),s.getDurationMinutes(),s.getPrice(),s.getCategory(),s.getCommissionPercentage(),s.getStatus(),s.getCreatedAt(),s.getUpdatedAt());}}

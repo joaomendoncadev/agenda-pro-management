@@ -1,0 +1,2 @@
+package dev.joaomendonca.agendapro.appointment.api;import dev.joaomendonca.agendapro.appointment.domain.*;import java.math.BigDecimal;import java.time.*;import java.util.UUID;
+public record AppointmentResponse(UUID id,UUID customerId,String customerName,UUID employeeId,String employeeName,UUID serviceId,String serviceName,LocalDateTime startsAt,LocalDateTime endsAt,AppointmentStatus status,String notes,BigDecimal price,Instant createdAt,Instant updatedAt){}

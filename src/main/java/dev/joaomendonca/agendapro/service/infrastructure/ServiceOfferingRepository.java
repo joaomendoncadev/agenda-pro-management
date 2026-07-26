@@ -1,0 +1,2 @@
+package dev.joaomendonca.agendapro.service.infrastructure;import dev.joaomendonca.agendapro.service.domain.ServiceOffering;import org.springframework.data.jpa.repository.JpaRepository;import java.util.*;
+public interface ServiceOfferingRepository extends JpaRepository<ServiceOffering,UUID>{List<ServiceOffering> findAllByTenantIdOrderByName(UUID tenantId);Optional<ServiceOffering> findByIdAndTenantId(UUID id,UUID tenantId);boolean existsByTenantIdAndNameIgnoreCase(UUID tenantId,String name);boolean existsByTenantIdAndNameIgnoreCaseAndIdNot(UUID tenantId,String name,UUID id);}

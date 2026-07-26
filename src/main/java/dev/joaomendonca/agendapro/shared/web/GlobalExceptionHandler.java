@@ -7,6 +7,7 @@ import java.util.Map;
 import dev.joaomendonca.agendapro.shared.exception.ConflictException;
 import dev.joaomendonca.agendapro.shared.exception.DomainException;
 import dev.joaomendonca.agendapro.shared.exception.UnauthorizedException;
+import dev.joaomendonca.agendapro.shared.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -20,6 +21,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     ProblemDetail conflict(ConflictException ex, HttpServletRequest request) {
         return problem(HttpStatus.CONFLICT, ex, request);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail notFound(NotFoundException ex, HttpServletRequest request) {
+        return problem(HttpStatus.NOT_FOUND, ex, request);
     }
 
     @ExceptionHandler(UnauthorizedException.class)

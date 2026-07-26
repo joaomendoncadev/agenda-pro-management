@@ -1,27 +1,11 @@
-# AgendaPro v0.1.0 — Release Notes
+# AgendaPro v1.1.0 — Agenda Visual
 
-## Objetivo
-
-Disponibilizar uma base completa e executável do AgendaPro, consolidando a fundação técnica e o primeiro módulo de identidade.
-
-## Principais fluxos
-
-1. inicialização do MySQL com Podman;
-2. aplicação automática das migrations V1 e V2;
-3. criação única do primeiro tenant e usuário proprietário;
-4. autenticação e emissão de tokens;
-5. renovação com rotação do refresh token;
-6. encerramento da sessão por revogação.
-
-## Limitações conhecidas
-
-- não há recuperação ou troca de senha;
-- não há convite de funcionários;
-- não há MFA;
-- a assinatura JWT usa segredo simétrico local;
-- o isolamento multi-tenant ainda não é aplicado automaticamente em todas as consultas;
-- ainda não existe frontend.
-
-## Próxima versão planejada
-
-`v0.2.0`: funcionários, convites e autorização administrativa.
+- Nova visualização semanal e diária.
+- Grade de horários das 07h às 22h.
+- Criação ao clicar em um horário livre.
+- Blocos visuais por atendimento e cores por status.
+- Filtros de profissional e status.
+- Navegação por dia/semana e botão Hoje.
+- Linha indicadora do horário atual.
+- Modal de detalhes, edição e alteração de status.
+- Layout responsivo para desktop e celular.

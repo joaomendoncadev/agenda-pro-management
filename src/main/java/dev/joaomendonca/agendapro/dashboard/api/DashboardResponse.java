@@ -1,0 +1,1 @@
+package dev.joaomendonca.agendapro.dashboard.api;import java.math.BigDecimal;import java.time.LocalDateTime;public record DashboardResponse(long appointmentsToday,long completedToday,long customers,long activeEmployees,BigDecimal revenueToday,LocalDateTime nextAppointment,String nextCustomer,String nextEmployee){}
