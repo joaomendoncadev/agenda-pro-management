@@ -1,4 +1,4 @@
-import { CalendarClock, Edit3, MoreHorizontal, Plus, Search, SlidersHorizontal, UserRound, Users } from 'lucide-react'
+import { CalendarClock, MoreHorizontal, Plus, Search, SlidersHorizontal, UserRound, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '../services/api'
 import type { Employee, EmployeeRequest, EmployeeStatus } from '../types'

@@ -1,10 +1,12 @@
 {
   "name": "agenda-pro-web",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
+    "clean": "rm -rf node_modules dist .vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint ."

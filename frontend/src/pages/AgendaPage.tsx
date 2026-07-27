@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Filter, Plus, Users, X } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Filter, Plus, RotateCcw, Users, X } from 'lucide-react'
 import { api, ApiError } from '../services/api'
 import { Modal } from '../components/Modal'
 import { Toast } from '../components/Toast'
-import type { Appointment, AppointmentRequest, AppointmentStatus, Customer, Employee, ServiceOffering } from '../types'
+import type { Appointment, AppointmentRequest, AppointmentStatus, Customer, Employee, EmployeeBlock, ServiceOffering } from '../types'
 
-type ViewMode = 'week' | 'day'
+type ViewMode = 'week' | 'day' | 'team'
 
 const HOUR_START = 7
 const HOUR_END = 22
@@ -68,11 +68,14 @@ export function AgendaPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
   const [services, setServices] = useState<ServiceOffering[]>([])
+  const [blocks, setBlocks] = useState<Array<EmployeeBlock & { employeeId: string; employeeName: string }>>([])
+  const [lastMove, setLastMove] = useState<{ appointment: Appointment; previousStartsAt: string } | null>(null)
   const [employeeFilter, setEmployeeFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'ALL'>('ALL')
   const [formOpen, setFormOpen] = useState(false)
   const [details, setDetails] = useState<Appointment | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' } | null>(null)
   const [form, setForm] = useState<AppointmentRequest>({ customerId: '', employeeId: '', serviceId: '', startsAt: localDateTime(today), notes: null })
@@ -82,7 +85,8 @@ export function AgendaPage() {
     return Array.from({ length: 7 }, (_, index) => addDays(monday, index))
   }, [selectedDate])
 
-  const visibleDays = view === 'day' ? [parseDate(selectedDate)] : weekDays
+  const visibleDays = view === 'week' ? weekDays : [parseDate(selectedDate)]
+  const teamEmployees = employeeFilter === 'ALL' ? employees : employees.filter(employee => employee.id === employeeFilter)
   const rangeFrom = isoDate(visibleDays[0])
   const rangeTo = isoDate(visibleDays[visibleDays.length - 1])
 
@@ -98,6 +102,13 @@ export function AgendaPage() {
   }
 
   useEffect(() => { void load() }, [rangeFrom, rangeTo])
+
+  useEffect(() => {
+    if (employees.length === 0) return
+    Promise.all(employees.map(async employee => (await api.listBlocks(employee.id)).map(block => ({ ...block, employeeId: employee.id, employeeName: employee.name }))))
+      .then(result => setBlocks(result.flat()))
+      .catch(() => setToast({ message: 'Não foi possível carregar os bloqueios da equipe.', type: 'error' }))
+  }, [employees])
 
   useEffect(() => {
     Promise.all([api.listCustomers(), api.listEmployees(), api.listServices()])
@@ -158,6 +169,50 @@ export function AgendaPage() {
     }
   }
 
+  const moveAppointment = async (date: string, hour: number, minute: number, employeeId?: string) => {
+    const appointment = items.find(item => item.id === draggingId)
+    if (!appointment) return
+    try {
+      await api.updateAppointment(appointment.id, {
+        customerId: appointment.customerId,
+        employeeId: employeeId || appointment.employeeId,
+        serviceId: appointment.serviceId,
+        startsAt: localDateTime(date, hour, minute),
+        notes: appointment.notes,
+      })
+      setLastMove({ appointment, previousStartsAt: appointment.startsAt.slice(0, 16) })
+      setToast({ message: employeeId && employeeId !== appointment.employeeId ? 'Agendamento movido para outro profissional.' : 'Agendamento movido com sucesso.' })
+      await load()
+    } catch (error) {
+      setToast({ message: error instanceof ApiError ? error.message : 'Não foi possível mover o agendamento.', type: 'error' })
+    } finally { setDraggingId(null) }
+  }
+
+
+  const undoLastMove = async () => {
+    if (!lastMove) return
+    try {
+      const { appointment, previousStartsAt } = lastMove
+      await api.updateAppointment(appointment.id, {
+        customerId: appointment.customerId,
+        employeeId: appointment.employeeId,
+        serviceId: appointment.serviceId,
+        startsAt: previousStartsAt,
+        notes: appointment.notes,
+      })
+      setLastMove(null)
+      await load()
+      setToast({ message: 'Última movimentação desfeita.' })
+    } catch (error) {
+      setToast({ message: error instanceof ApiError ? error.message : 'Não foi possível desfazer a movimentação.', type: 'error' })
+    }
+  }
+
+  const visibleBlocks = useMemo(() => blocks.filter(block => {
+    const blockDate = block.startsAt.slice(0, 10)
+    return blockDate >= rangeFrom && blockDate <= rangeTo && (employeeFilter === 'ALL' || block.employeeId === employeeFilter)
+  }), [blocks, employeeFilter, rangeFrom, rangeTo])
+
   const navigate = (direction: number) => {
     const date = parseDate(selectedDate)
     date.setDate(date.getDate() + direction * (view === 'week' ? 7 : 1))
@@ -193,18 +248,26 @@ export function AgendaPage() {
         <div className="calendar-controls">
           <label className="calendar-filter"><Users size={16}/><select value={employeeFilter} onChange={event => setEmployeeFilter(event.target.value)}><option value="ALL">Toda a equipe</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select></label>
           <label className="calendar-filter"><Filter size={16}/><select value={statusFilter} onChange={event => setStatusFilter(event.target.value as AppointmentStatus | 'ALL')}><option value="ALL">Todos os status</option>{Object.entries(statusMeta).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</select></label>
-          <div className="view-switch"><button className={view === 'day' ? 'active' : ''} onClick={() => setView('day')}>Dia</button><button className={view === 'week' ? 'active' : ''} onClick={() => setView('week')}>Semana</button></div>
+          {lastMove && <button className="button secondary small undo-button" onClick={() => void undoLastMove()}><RotateCcw size={15}/>Desfazer</button>}
+          <div className="view-switch"><button className={view === 'day' ? 'active' : ''} onClick={() => setView('day')}>Dia</button><button className={view === 'week' ? 'active' : ''} onClick={() => setView('week')}>Semana</button><button className={view === 'team' ? 'active' : ''} onClick={() => setView('team')}>Equipe</button></div>
         </div>
       </header>
 
       <div className="calendar-legend">
-        {Object.entries(statusMeta).map(([status, meta]) => <span key={status}><i className={meta.className}/>{meta.label}</span>)}
+        {Object.entries(statusMeta).map(([status, meta]) => <span key={status}><i className={meta.className}/>{meta.label}</span>)}<span><i className="blocked"/>Bloqueio</span>
       </div>
 
-      <div className={`calendar-scroll ${view === 'day' ? 'day-view' : ''}`}>
-        <div className="calendar-grid" style={{ '--calendar-columns': visibleDays.length } as CSSProperties}>
+      <div className={`calendar-scroll ${view === 'day' ? 'day-view' : ''} ${view === 'team' ? 'team-view' : ''}`}>
+        <div className="calendar-grid" style={{ '--calendar-columns': view === 'team' ? Math.max(teamEmployees.length, 1) : visibleDays.length } as CSSProperties}>
           <div className="calendar-corner"><Clock3 size={15}/><span>Horário</span></div>
-          {visibleDays.map(day => {
+          {view === 'team' ? teamEmployees.map(employee => {
+            const count = filteredItems.filter(item => item.startsAt.slice(0, 10) === selectedDate && item.employeeId === employee.id).length
+            return <div key={employee.id} className="calendar-day-header professional-header">
+              <span>{employee.position || 'Profissional'}</span>
+              <strong>{employee.name}</strong>
+              <small>{count} atend.</small>
+            </div>
+          }) : visibleDays.map(day => {
             const value = isoDate(day)
             const isToday = value === today
             return <button key={value} className={`calendar-day-header ${isToday ? 'today' : ''}`} onClick={() => { setSelectedDate(value); setView('day') }}>
@@ -218,16 +281,25 @@ export function AgendaPage() {
             {Array.from({ length: HOUR_END - HOUR_START + 1 }, (_, index) => <span key={index} style={{ top: index * HOUR_HEIGHT }}>{String(HOUR_START + index).padStart(2, '0')}:00</span>)}
           </div>
 
-          {visibleDays.map(day => {
-            const date = isoDate(day)
-            const dayItems = filteredItems.filter(item => item.startsAt.slice(0, 10) === date)
-            return <div className={`calendar-day-column ${date === today ? 'today' : ''}`} key={date} style={{ height: (HOUR_END - HOUR_START) * HOUR_HEIGHT }}>
+          {(view === 'team' ? teamEmployees.map(employee => ({ date: selectedDate, employee })) : visibleDays.map(day => ({ date: isoDate(day), employee: null }))).map(column => {
+            const date = column.date
+            const employeeId = column.employee?.id
+            const dayItems = filteredItems.filter(item => item.startsAt.slice(0, 10) === date && (!employeeId || item.employeeId === employeeId))
+            const dayBlocks = visibleBlocks.filter(block => block.startsAt.slice(0, 10) === date && (!employeeId || block.employeeId === employeeId))
+            return <div className={`calendar-day-column ${date === today ? 'today' : ''}`} key={`${date}-${employeeId || 'day'}`} style={{ height: (HOUR_END - HOUR_START) * HOUR_HEIGHT }}>
               {slots.map(minutes => {
                 const hour = Math.floor(minutes / 60)
                 const minute = minutes % 60
-                return <button key={minutes} className="calendar-slot" style={{ top: ((minutes - HOUR_START * 60) / 60) * HOUR_HEIGHT, height: HOUR_HEIGHT / 2 }} onClick={() => openCreate(date, hour, minute)} aria-label={`Agendar em ${date} às ${hour}:${String(minute).padStart(2, '0')}`}/>
+                return <button key={minutes} className="calendar-slot" onDragOver={event => event.preventDefault()} onDrop={() => void moveAppointment(date, hour, minute, employeeId)} style={{ top: ((minutes - HOUR_START * 60) / 60) * HOUR_HEIGHT, height: HOUR_HEIGHT / 2 }} onClick={() => { openCreate(date, hour, minute); if (employeeId) setForm(current => ({ ...current, employeeId })) }} aria-label={`Agendar em ${date} às ${hour}:${String(minute).padStart(2, '0')}`}/>
               })}
               {date === today && nowMinutes >= HOUR_START * 60 && nowMinutes <= HOUR_END * 60 && <div className="current-time-line" style={{ top: nowTop }}><i/><span>{now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></div>}
+              {dayBlocks.map(block => {
+                const starts = toMinutes(block.startsAt)
+                const ends = toMinutes(block.endsAt)
+                const top = ((starts - HOUR_START * 60) / 60) * HOUR_HEIGHT
+                const height = Math.max(((ends - starts) / 60) * HOUR_HEIGHT, 28)
+                return <div key={block.id} className="calendar-block" style={{ top, height }} title={`${block.reason} · ${block.employeeName}`}><strong>{block.reason || 'Indisponível'}</strong>{view !== 'team' && <small>{block.employeeName}</small>}<span>{block.startsAt.slice(11,16)}–{block.endsAt.slice(11,16)}</span></div>
+              })}
               {dayItems.map(appointment => {
                 const starts = toMinutes(appointment.startsAt)
                 const ends = toMinutes(appointment.endsAt)
@@ -236,7 +308,10 @@ export function AgendaPage() {
                 if (ends <= HOUR_START * 60 || starts >= HOUR_END * 60) return null
                 return <button
                   key={appointment.id}
-                  className={`calendar-event ${statusMeta[appointment.status].className}`}
+                  draggable
+                  onDragStart={event => { event.stopPropagation(); setDraggingId(appointment.id); event.dataTransfer.effectAllowed = 'move' }}
+                  onDragEnd={() => setDraggingId(null)}
+                  className={`calendar-event ${draggingId === appointment.id ? 'dragging' : ''} ${statusMeta[appointment.status].className}`}
                   style={{ top, height }}
                   onClick={event => { event.stopPropagation(); setDetails(appointment) }}
                   title={`${appointment.customerName} · ${appointment.serviceName}`}

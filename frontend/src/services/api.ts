@@ -1,4 +1,4 @@
-import type { Appointment, AppointmentRequest, AppointmentStatus, CurrentUser, DashboardSummary, FinanceSummary, FinancialTransaction, FinancialTransactionRequest, TenantSettings, Customer, CustomerRequest, CustomerStatus, Employee, EmployeeBlock, EmployeeRequest, EmployeeStatus, ProblemDetails, ServiceOffering, ServiceRequest, ServiceStatus, TokenResponse, WorkSchedule, WorkScheduleRequest } from '../types'
+import type { Appointment, AppointmentRequest, AppointmentStatus, CurrentUser, DashboardSummary, FinanceSummary, FinancialTransaction, FinancialTransactionRequest, TenantSettings, AnalyticsSummary, BusinessUnit, ServiceOrder, CashSession, NotificationItem, AssistantAnswer, PublicCatalog, CustomerProfile, Customer, CustomerRequest, CustomerStatus, Employee, EmployeeBlock, EmployeeRequest, EmployeeStatus, ProblemDetails, ServiceOffering, ServiceRequest, ServiceStatus, TokenResponse, WorkSchedule, WorkScheduleRequest, Product, InventoryMovement, CommissionSummary } from '../types'
 
 const ACCESS_TOKEN_KEY = 'agenda-pro.access-token'
 const REFRESH_TOKEN_KEY = 'agenda-pro.refresh-token'
@@ -109,6 +109,34 @@ export const api = {
   financeSummary: (from:string,to:string) => request<FinanceSummary>(`/api/v1/finance/summary?from=${from}&to=${to}`),
   createTransaction: (payload:FinancialTransactionRequest) => request<FinancialTransaction>('/api/v1/finance/transactions',{method:'POST',body:JSON.stringify(payload)}),
   deleteTransaction: (id:string) => request<void>(`/api/v1/finance/transactions/${id}`,{method:'DELETE'}),
+
+  analytics: (from:string,to:string) => request<AnalyticsSummary>(`/api/v1/analytics?from=${from}&to=${to}`),
+  customerProfile: (id:string) => request<CustomerProfile>(`/api/v1/customers/${id}/profile`),
+  listUnits: () => request<BusinessUnit[]>('/api/v1/units'),
+  createUnit: (payload:{name:string;slug:string;address?:string;phone?:string}) => request<BusinessUnit>('/api/v1/units',{method:'POST',body:JSON.stringify(payload)}),
+  listOrders: () => request<ServiceOrder[]>('/api/v1/orders'),
+  getOrder: (id:string) => request<ServiceOrder>(`/api/v1/orders/${id}`),
+  createOrder: (payload:{customerId:string;employeeId?:string;appointmentId?:string;notes?:string}) => request<{id:string;status:string}>('/api/v1/orders',{method:'POST',body:JSON.stringify(payload)}),
+  addOrderItem: (id:string,payload:{itemType:string;referenceId?:string;description:string;quantity:number;unitPrice:number}) => request<void>(`/api/v1/orders/${id}/items`,{method:'POST',body:JSON.stringify(payload)}),
+  closeOrder: (id:string,paymentMethod:string) => request<void>(`/api/v1/orders/${id}/close`,{method:'POST',body:JSON.stringify({paymentMethod})}),
+  currentCash: () => request<CashSession>('/api/v1/cash/current'),
+  openCash: (openingBalance:number) => request<CashSession>('/api/v1/cash/open',{method:'POST',body:JSON.stringify({openingBalance})}),
+  closeCash: (id:string,closingBalance:number,notes?:string) => request<void>(`/api/v1/cash/${id}/close`,{method:'POST',body:JSON.stringify({closingBalance,notes})}),
+  listNotifications: () => request<NotificationItem[]>('/api/v1/notifications'),
+  queueReminders: (hours=24) => request<{queued:number;providerConfigured:boolean;message:string}>(`/api/v1/notifications/reminders?hours=${hours}`,{method:'POST'}),
+  askAssistant: (question:string) => request<AssistantAnswer>('/api/v1/assistant/query',{method:'POST',body:JSON.stringify({question})}),
+  getPublicBookingSettings: () => request<{enabled:boolean;slug?:string;message?:string}>('/api/v1/public-booking/settings'),
+  updatePublicBookingSettings: (payload:{enabled:boolean;slug:string;message?:string}) => request<Record<string,unknown>>('/api/v1/public-booking/settings',{method:'PUT',body:JSON.stringify(payload)}),
+  publicCatalog: (slug:string) => request<PublicCatalog>(`/api/public/${slug}`,{retryAuth:false}),
+  publicBook: (slug:string,payload:Record<string,unknown>) => request<Record<string,unknown>>(`/api/public/${slug}/book`,{method:'POST',body:JSON.stringify(payload),retryAuth:false}),
+
+  listProducts: () => request<Product[]>('/api/v1/products'),
+  createProduct: (payload:{name:string;sku?:string;category?:string;salePrice:number;costPrice:number;initialStock:number;minimumStock:number}) => request<{id:string;name:string;active:boolean}>('/api/v1/products',{method:'POST',body:JSON.stringify(payload)}),
+  moveStock: (id:string,payload:{type:string;quantity:number;unitCost?:number;reason:string}) => request<void>(`/api/v1/products/${id}/movements`,{method:'POST',body:JSON.stringify(payload)}),
+  listInventoryMovements: () => request<InventoryMovement[]>('/api/v1/inventory/movements'),
+  commissions: (from:string,to:string) => request<CommissionSummary>(`/api/v1/commissions?from=${from}&to=${to}`),
+  generateCommission: (employeeId:string,payload:{description:string;baseAmount:number;percentage:number;occurredOn:string}) => request<{id:string;commissionAmount:number;status:string}>(`/api/v1/commissions/${employeeId}/generate`,{method:'POST',body:JSON.stringify(payload)}),
+  payCommissions: (employeeId:string,payload:{from:string;to:string}) => request<{paidEntries:number;amount:number}>(`/api/v1/commissions/${employeeId}/pay`,{method:'POST',body:JSON.stringify(payload)}),
   getSettings: () => request<TenantSettings>('/api/v1/settings'),
   updateSettings: (payload:TenantSettings) => request<TenantSettings>('/api/v1/settings',{method:'PUT',body:JSON.stringify(payload)}),
 }

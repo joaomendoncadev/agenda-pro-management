@@ -20,4 +20,11 @@ public class AuthenticatedTenantProvider {
         }
         return UUID.fromString(tenantId);
     }
+    public UUID userId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof JwtAuthenticationToken jwt)) {
+            throw new UnauthorizedException("INVALID_AUTHENTICATION", "Autenticação inválida.");
+        }
+        return UUID.fromString(jwt.getToken().getSubject());
+    }
 }

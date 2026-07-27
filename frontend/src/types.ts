@@ -107,3 +107,20 @@ export interface FinancialTransactionRequest { type:TransactionType; category:st
 export interface FinanceSummary { income:number; expenses:number; balance:number; pendingCount:number }
 export interface DashboardSummary { appointmentsToday:number; completedToday:number; customers:number; activeEmployees:number; revenueToday:number; nextAppointment:string|null; nextCustomer:string|null; nextEmployee:string|null }
 export interface TenantSettings { businessName:string; phone:string|null; timezone:string; currency:string; bookingIntervalMinutes:number; cancellationHours:number }
+
+export interface AnalyticsSummary { from:string; to:string; revenue:number; averageTicket:number; completed:number; cancelled:number; noShows:number; revenueByEmployee:Array<{label:string;value:number}>; appointmentsByService:Array<{label:string;value:number}>; heatmap:Array<{day:number;hour:number;value:number}> }
+export interface BusinessUnit { id:string; name:string; slug:string; address?:string; phone?:string; active:boolean }
+export interface ServiceOrderItem { id:string; itemType:string; referenceId?:string; description:string; quantity:number; unitPrice:number; total:number }
+export interface ServiceOrder { id:string; customerId:string; customerName:string; status:string; total:number; discount:number; paymentMethod?:string; openedAt:string; closedAt?:string; items?:ServiceOrderItem[] }
+export interface CashSession { id?:string; status:'OPEN'|'CLOSED'; openedAt?:string; openingBalance?:number; expectedBalance?:number; incomeToday?:number; expensesToday?:number }
+export interface NotificationItem { id:string; channel:string; recipient:string; template:string; status:string; scheduledAt:string; sentAt?:string; attempts:number }
+export interface AssistantAnswer { answer:string; data:Array<Record<string,unknown>> }
+export interface PublicCatalog { business:Record<string,unknown>; services:ServiceOffering[]; employees:Employee[] }
+
+export interface CustomerHistoryItem { id:string; startsAt:string; endsAt:string; status:AppointmentStatus; price:number; serviceName:string; employeeName:string }
+export interface CustomerProfile { customer:Record<string,unknown>; history:CustomerHistoryItem[]; totalSpent:number; completedVisits:number }
+
+export interface Product { id:string; name:string; sku?:string; category?:string; salePrice:number; costPrice:number; stockQuantity:number; minimumStock:number; active:boolean; createdAt:string; updatedAt:string }
+export interface InventoryMovement { id:string; productId:string; productName:string; type:'ENTRY'|'EXIT'|'ADJUSTMENT'; quantity:number; unitCost?:number; reason:string; occurredAt:string }
+export interface CommissionEmployeeSummary { employeeId:string; employeeName:string; pending:number; paid:number; total:number }
+export interface CommissionSummary { from:string; to:string; pending:number; paid:number; total:number; employees:CommissionEmployeeSummary[] }

@@ -89,3 +89,19 @@ npm run dev
 ### Integração de pagamentos
 
 A migration cria a estrutura de assinaturas. Para cobrança real é necessário escolher Mercado Pago ou Stripe, configurar credenciais em variáveis de ambiente e implementar webhooks assinados. Nenhuma cobrança é executada no modo local.
+
+
+## v2.1.0 — Prioridades comerciais 1–5
+
+Esta versão aprofunda a primeira metade do roadmap comercial:
+
+- agenda visual com navegação diária/semanal e drag-and-drop;
+- dashboard executivo com filtros de período, ranking e mapa de calor;
+- perfil 360º do cliente com gasto total, recorrência e histórico;
+- comandas operacionais com itens, pagamentos e integração financeira;
+- caixa diário com entradas, saídas, saldo esperado e conferência de fechamento.
+
+
+## v2.4.0
+
+Inclui estoque, produtos, movimentações e fechamento de comissões por profissional.

@@ -11,6 +11,9 @@ import {
   Sun,
   Users,
   WalletCards,
+  BarChart3,
+  PanelsTopLeft,
+  PackageSearch,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -26,6 +29,9 @@ const navigation = [
   { to: '/agenda', label: 'Agenda', icon: CalendarDays },
   { to: '/services', label: 'Serviços', icon: Scissors },
   { to: '/finance', label: 'Financeiro', icon: WalletCards },
+  { to: '/insights', label: 'Indicadores', icon: BarChart3 },
+  { to: '/operations', label: 'Central operacional', icon: PanelsTopLeft },
+  { to: '/inventory', label: 'Estoque e comissões', icon: PackageSearch },
   { to: '/settings', label: 'Configurações', icon: Settings },
 ] as const
 
