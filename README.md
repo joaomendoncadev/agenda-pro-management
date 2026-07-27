@@ -1,77 +1,107 @@
 # AgendaPro
 
-Sistema de gestão de agenda para salões de beleza, construído como produto comercial e preparado para evolução futura para SaaS.
+SaaS de gestão para salões e profissionais de beleza. Esta versão contém backend Spring Boot e frontend React.
 
-## Stack inicial
+## Tecnologias
 
-- Java 25
-- Spring Boot 3.5
-- Maven
-- MySQL 8.4
-- Flyway
-- Podman
-- GitHub Actions
-- Spring Boot Actuator
+### Backend
+- Java 25, Spring Boot 3.5, Spring Security, JWT, JPA, Flyway e MySQL.
 
-## Pré-requisitos
-
-- JDK 25
-- Podman
-- Podman Compose
+### Frontend
+- React, TypeScript, Vite e CSS responsivo.
 
 ## Executar localmente
 
+### 1. Banco e backend
+
 ```bash
-podman machine start
 podman compose up -d
 ./mvnw spring-boot:run
 ```
 
-Verifique:
+A API estará disponível em `http://localhost:8080`.
+
+### 2. Frontend
+
+Em outro terminal:
 
 ```bash
-curl http://localhost:8080/actuator/health
-curl http://localhost:8080/api/v1/application
+cd frontend
+npm install
+npm run dev
 ```
 
-## Testes
+Abra `http://localhost:5173`.
+
+### Credenciais locais
+
+Após executar o bootstrap já criado na versão anterior:
+
+- E-mail: `admin@agendapro.local`
+- Senha: `ChangeMe123!`
+
+## Funcionalidades visuais
+- Login e logout.
+- Renovação automática da sessão.
+- Dashboard.
+- Cadastro, edição, busca e filtro de funcionários.
+- Ativação e inativação.
+- Jornada semanal.
+- Bloqueios de agenda.
+
+
+## Frontend foundation
+
+O frontend utiliza React, TypeScript, Vite, TanStack Query, React Hook Form, Zod, Tailwind CSS e Sonner.
+
+## Módulo de clientes (v0.5.0)
+
+Após efetuar login, acesse **Clientes** no menu lateral. A tela permite cadastrar, editar, pesquisar, filtrar e ativar/inativar clientes, além de acompanhar aniversários próximos.
+
+## AgendaPro v0.7.0
+
+Além de identidade, funcionários e clientes, esta versão contém catálogo de serviços e agenda diária.
+
+Fluxo recomendado para validação:
+1. Cadastre ao menos um funcionário ativo.
+2. Cadastre ao menos um cliente ativo.
+3. Cadastre um serviço com duração e preço.
+4. Abra **Agenda** e crie um agendamento.
+5. Tente cadastrar outro atendimento para o mesmo profissional no mesmo horário para validar o conflito.
+
+## AgendaPro 1.0.0
+
+MVP consolidado com autenticação multi-tenant, equipe, clientes, serviços, agenda, financeiro, dashboard e configurações.
+
+### Execução
 
 ```bash
-./mvnw clean verify
+podman compose up -d
+./mvnw spring-boot:run
 ```
 
-Os testes usam banco H2 em memória no perfil `test`, portanto não dependem do MySQL local.
-
-## Banco de dados
-
-O Hibernate apenas valida o schema. Toda alteração estrutural deve ser criada em `src/main/resources/db/migration`.
-
-Credenciais locais padrão:
-
-- database: `agenda_pro`
-- username: `agenda_pro`
-- password: `agenda_pro`
-
-Sobrescreva configurações por variáveis de ambiente. Consulte `.env.example`.
-
-## Estrutura inicial
-
-```text
-src/main/java/dev/joaomendonca/agendapro
-├── shared
-└── AgendaProApplication.java
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-Os módulos de negócio serão adicionados incrementalmente, começando por autenticação e identidade.
+### Integração de pagamentos
 
-## Branch atual
+A migration cria a estrutura de assinaturas. Para cobrança real é necessário escolher Mercado Pago ou Stripe, configurar credenciais em variáveis de ambiente e implementar webhooks assinados. Nenhuma cobrança é executada no modo local.
 
-```text
-feature/build-base
-```
 
-## Commit sugerido
+## v2.1.0 — Prioridades comerciais 1–5
 
-```text
-chore(bootstrap): establish AgendaPro project foundation
-```
+Esta versão aprofunda a primeira metade do roadmap comercial:
+
+- agenda visual com navegação diária/semanal e drag-and-drop;
+- dashboard executivo com filtros de período, ranking e mapa de calor;
+- perfil 360º do cliente com gasto total, recorrência e histórico;
+- comandas operacionais com itens, pagamentos e integração financeira;
+- caixa diário com entradas, saídas, saldo esperado e conferência de fechamento.
+
+
+## v2.4.0
+
+Inclui estoque, produtos, movimentações e fechamento de comissões por profissional.

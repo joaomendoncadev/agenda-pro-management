@@ -1,0 +1,1 @@
+package dev.joaomendonca.agendapro.appointment.api;import dev.joaomendonca.agendapro.appointment.domain.AppointmentStatus;import jakarta.validation.constraints.NotNull;public record AppointmentStatusRequest(@NotNull AppointmentStatus status){}

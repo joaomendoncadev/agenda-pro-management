@@ -12,7 +12,6 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        format_sql: true
         jdbc:
           time_zone: UTC
   flyway:
@@ -35,7 +34,10 @@ management:
       probes:
         enabled: true
 
-logging:
-  level:
-    root: INFO
-    dev.joaomendonca.agendapro: INFO
+agenda-pro:
+  security:
+    issuer: ${JWT_ISSUER:agenda-pro-management}
+    secret: ${JWT_SECRET:local-development-secret-change-me-1234567890}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL:30d}
+    bootstrap-key: ${BOOTSTRAP_KEY:agenda-pro-local-bootstrap}

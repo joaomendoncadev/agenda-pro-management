@@ -1,0 +1,1 @@
+package dev.joaomendonca.agendapro.settings.api;import jakarta.validation.constraints.*;public record SettingsRequest(@NotBlank @Size(max=120) String businessName,@Size(max=30) String phone,@NotBlank String timezone,@Pattern(regexp="[A-Z]{3}") String currency,@Min(5) @Max(120) int bookingIntervalMinutes,@Min(0) @Max(720) int cancellationHours){}

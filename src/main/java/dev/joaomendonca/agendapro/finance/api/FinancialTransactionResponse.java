@@ -1,0 +1,1 @@
+package dev.joaomendonca.agendapro.finance.api; import dev.joaomendonca.agendapro.finance.domain.*;import java.math.BigDecimal;import java.time.*;import java.util.UUID; public record FinancialTransactionResponse(UUID id,TransactionType type,String category,String description,BigDecimal amount,LocalDate occurredOn,TransactionStatus status,Instant createdAt,Instant updatedAt){}
